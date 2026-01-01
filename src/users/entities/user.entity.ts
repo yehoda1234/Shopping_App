@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Order } from '../../orders/entities/order.entity';
 
 export enum UserRole {
   ADMIN = 'ADMIN',
@@ -8,7 +9,7 @@ export enum UserRole {
 @Entity( 'users')
 export class User {
     @PrimaryGeneratedColumn('uuid')
-    id: string;
+    id: number;
 
     @Column({ unique: true })
     email: string;
@@ -34,4 +35,8 @@ export class User {
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    // Relations
+    @OneToMany(() => Order, (order) => order.user)
+    orders: Order[];
 }
