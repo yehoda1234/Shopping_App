@@ -1,5 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, OneToOne } from 'typeorm';
 import { Order } from '../../orders/entities/order.entity';
+import { Cart } from '../../cart/entities/cart.entity';
+import { Exclude } from 'class-transformer';
 
 export enum UserRole {
   ADMIN = 'ADMIN',
@@ -8,13 +10,14 @@ export enum UserRole {
 
 @Entity( 'users')
 export class User {
-    @PrimaryGeneratedColumn('uuid')
+    @PrimaryGeneratedColumn()
     id: number;
 
     @Column({ unique: true })
     email: string;
 
     @Column({ select: false })
+    @Exclude()
     password: string;
 
     @Column()
@@ -39,4 +42,7 @@ export class User {
     // Relations
     @OneToMany(() => Order, (order) => order.user)
     orders: Order[];
+
+    @OneToOne(() => Cart, (cart) => cart.user)
+    cart: Cart;
 }

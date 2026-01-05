@@ -11,7 +11,7 @@ export class OrderItem {
     quantity: number;
 
     @Column({ type: 'decimal', precision: 10, scale: 2 })
-    priceAtPurchase: number;
+    priceAtPurchase: string;
 
     // Relations
     @ManyToOne(() => Order, (order) => order.items, { onDelete: 'CASCADE' })

@@ -28,6 +28,6 @@ export class Order {
     user: User;
 
 
-    @OneToMany(() => OrderItem, (Item) => Item.order, { cascade: true })
+    @OneToMany(() => OrderItem, (item) => item.order, { cascade: true })
     items: OrderItem[];
 }
