@@ -21,6 +21,8 @@ export class AuthService {
   }
 
     async login(user: any) {
+    console.log('--- 1. AuthService: User Data ---');
+    console.log('User Role is:', user.role);
     const payload = { email: user.email, sub: user.id, role: user.role };
 
     return {
