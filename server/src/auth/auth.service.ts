@@ -21,12 +21,19 @@ export class AuthService {
   }
 
     async login(user: any) {
-    console.log('--- 1. AuthService: User Data ---');
-    console.log('User Role is:', user.role);
+   console.log('--- 1. Login Attempt ---');
+    console.log('User ID:', user.id);
+    console.log('User Role from DB:', user.role);
     const payload = { email: user.email, sub: user.id, role: user.role };
 
     return {
         access_token: this.jwtService.sign(payload),
+
+        user: { 
+        id: user.id,
+        email: user.email,
+        role: user.role 
+    }
     };
   }
 

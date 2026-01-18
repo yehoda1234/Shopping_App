@@ -10,6 +10,8 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { User } from '../users/entities/user.entity';
 import { CartService } from '../cart/cart.service';
 import { CartItem } from '../cart/entities/cart-item.entity';
+import { UserRole } from '../users/entities/user.entity';
+
 
 @Injectable()
 export class OrdersService {
@@ -101,14 +103,24 @@ console.log('Creating order for user ID:', user.id);
     });
   }
 
-  // שאר הפונקציות נשארות זהות...
-  async findAll(user: User) {
+
+ async findAll(user: User) {
+    // 1. אם המשתמש הוא מנהל - נחזיר את כל ההזמנות במערכת
+    if (user.role === UserRole.ADMIN) {
+      return this.ordersRepository.find({
+        relations: ['items', 'items.product', 'user'], // כולל פרטי המשתמש שהזמין
+        order: { createdAt: 'DESC' },
+      });
+    }
+
+    // 2. אחרת (משתמש רגיל) - נחזיר רק את ההזמנות שלו
     return this.ordersRepository.find({
       where: { user: { id: user.id } },
       relations: ['items', 'items.product'],
       order: { createdAt: 'DESC' },
     });
   }
+  
 
   async findOne(id: number, user: User) {
     const order = await this.ordersRepository.findOne({

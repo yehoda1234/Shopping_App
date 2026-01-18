@@ -1,8 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Req} from '@nestjs/common';
 import { CartService } from './cart.service';
 import { CreateCartDto } from './dto/create-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
 import { AuthGuard } from '@nestjs/passport';
+
+
+
 
 
 @Controller('cart')
@@ -18,6 +21,11 @@ addToCart(@Request() req, @Body() createCartDto: CreateCartDto) {
 @Get()
 getCart(@Request() req) {
   return this.cartService.getCart(req.user);
+}
+
+@Patch('item')
+async updateQuantity(@Body() body: { itemId: number, quantity: number }, @Request() req) {
+  return this.cartService.updateItemQuantity(req.user, body.itemId, body.quantity);
 }
 
 @Delete(':itemId')

@@ -1,6 +1,9 @@
 import { Card, Button, Badge } from "react-bootstrap";
 import type { Product } from "../types/product";
 import { CartPlus } from "react-bootstrap-icons";
+import { useAppDispatch, useAppSelector } from "../features/hooks";
+import { addToCart } from "../features/cart/cartSlice";
+import { useNavigate } from "react-router-dom";
 
 interface ProductCardProps {
     product: Product;
@@ -8,6 +11,21 @@ interface ProductCardProps {
 
 
 export default function ProductCard({ product }: ProductCardProps) {
+    const dispatch = useAppDispatch();
+    const navigate = useNavigate();
+
+    const { isAuthenticated } = useAppSelector((state) => state.auth);
+
+    const handleAddToCart = () => {
+        if (!isAuthenticated) {
+            navigate('/login');
+           return;
+        }
+        dispatch(addToCart({productId: product.id, quantity: 1}));
+    };
+
+
+
     return (
         <Card className="h-100 shadow-sm border-0">
       {/* תמונה - אם אין תמונה נציג ריבוע אפור */}
@@ -46,7 +64,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 {product.stock > 0 ? `במלאי: ${product.stock}` : "אזל המלאי"}
             </span>
             
-            <Button variant="primary" disabled={product.stock === 0}>
+            <Button variant="primary" disabled={product.stock === 0} onClick={handleAddToCart}>
                 <CartPlus size={20} className="me-2" />
                 הוסף
             </Button>

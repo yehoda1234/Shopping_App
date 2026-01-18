@@ -64,4 +64,12 @@ export class CartService {
     await this.cartItemRepository.delete({ cart: { id: cart.id } });
     return { message: 'Cart has been cleared' };
   }
+
+
+  async updateItemQuantity(user: any,itemId: number, quantity: number) {
+    await this.cartItemRepository.update(itemId, { quantity });
+    return this.getCart(user);
+  
+  }
+
 }
