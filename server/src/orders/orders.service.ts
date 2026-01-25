@@ -1,4 +1,4 @@
-// 
+
 
 
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
@@ -54,17 +54,7 @@ console.log('Creating order for user ID:', user.id);
       
       const savedOrder = await manager.save(Order, order);
 
-      // // ב. הכנת הפריטים לשמירה
-      // // אנחנו משתמשים במידע פשוט כדי לא לבלבל את TypeORM
-      // const orderItems = cart.items.map((cartItem) => {
-      //   return manager.create(OrderItem, {
-      //     order: { id: savedOrder.id } as any, // מקשרים להזמנה שיצרנו הרגע
-      //     product: { id: cartItem.product.id } as any, // מקשרים למוצר
-      //     quantity: cartItem.quantity,
-      //     priceAtPurchase: cartItem.product.price,
-      //   });
-      // });
-
+      
       const orderItems: OrderItem[] = [];
       for (const cartItem of cart.items) {
         const product = cartItem.product;
@@ -87,8 +77,7 @@ console.log('Creating order for user ID:', user.id);
       }
 
 
-      // ג. הכנסת הפריטים (INSERT)
-      // insert היא פקודה "טיפשה" שלא מנסה לעדכן את המוצר - היא רק יוצרת שורות ב-order_items
+      
       await manager.save(OrderItem, orderItems);
 
       // ד. מחיקת העגלה
@@ -105,22 +94,21 @@ console.log('Creating order for user ID:', user.id);
 
 
  async findAll(user: User) {
-    // 1. אם המשתמש הוא מנהל - נחזיר את כל ההזמנות במערכת
-    if (user.role === UserRole.ADMIN) {
       return this.ordersRepository.find({
-        relations: ['items', 'items.product', 'user'], // כולל פרטי המשתמש שהזמין
+        where: { user: { id: user.id } } ,
+        relations: ['items', 'items.product'], // כולל פרטי המשתמש שהזמין
         order: { createdAt: 'DESC' },
       });
     }
 
-    // 2. אחרת (משתמש רגיל) - נחזיר רק את ההזמנות שלו
-    return this.ordersRepository.find({
-      where: { user: { id: user.id } },
-      relations: ['items', 'items.product'],
-      order: { createdAt: 'DESC' },
-    });
-  }
-  
+    async findAllByAdmin() {
+      return this.ordersRepository.find({
+        relations: ['items', 'items.product', 'user'],
+        order: { createdAt: 'DESC' },
+      });
+    }
+
+
 
   async findOne(id: number, user: User) {
     const order = await this.ordersRepository.findOne({

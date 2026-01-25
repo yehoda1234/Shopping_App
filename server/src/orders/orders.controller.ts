@@ -13,20 +13,32 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
-  @Post()
-  create(@Request() req, @Body() createOrderDto: CreateOrderDto) {
-    return this.ordersService.create(req.user, createOrderDto);
-  }
 
+  @Get('all')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async findAllSystem() {
+    return this.ordersService.findAllByAdmin();
+  }
+  
   @Get()
   findAll(@Request() req) {
     return this.ordersService.findAll(req.user);
   }
 
+  @Post()
+  create(@Request() req, @Body() createOrderDto: CreateOrderDto) {
+    return this.ordersService.create(req.user, createOrderDto);
+  }
+
+
+
   @Get(':id')
   findOne(@Request() req, @Param('id') id: string) {
     return this.ordersService.findOne(+id, req.user);
   }
+
+ 
 
   @Patch(':id/status')
   @UseGuards(AuthGuard('jwt'), RolesGuard)

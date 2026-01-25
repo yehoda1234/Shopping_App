@@ -103,6 +103,25 @@ export default function Login() {
 
         </Form>
 
+        <div className="text-center my-3">
+          <span className='text-muted'>או</span>
+        </div>
+
+        <Button
+          variant='outline-danger'
+          className='w-100 d-flex align-items-center justify-content-center gap-2 mb-3'
+          onClick={() => window.location.href = 'http://127.0.0.1:3000/auth/google'}
+          type='button'
+        >
+
+
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <path fill="currentColor" d="m21.35,11.1H12.18V13.83H18.69C18.36,17.64 15.19,19.27 12.19,19.27C8.36,19.27 5,16.25 5,12.61C5,9.05 8.36,5.97 12.19,5.97C14.36,5.97 16.25,7.01 17.16,7.72L19.57,5.59C17.65,3.78 15.15,2.62 12.19,2.62C6.98,2.62 2.62,6.97 2.62,12.16C2.62,17.34 6.98,21.7 12.19,21.7C16.85,21.7 21.63,18.37 21.63,12.53C21.63,11.89 21.49,11.37 21.35,11.1Z" />
+          </svg>
+           התחבר באמצעות Google
+           </Button>
+
+
         <div className="text-center mt-3">
           <small>
             אין לך חשבון? <Link to="/register">הירשם כאן</Link>

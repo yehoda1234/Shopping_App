@@ -38,23 +38,23 @@ export default function CartDrawer() {
                 </div>
             ) : (
                 <ListGroup variant="flush">
-                    {items.map((item) => (
+                    {/* 👇 התיקון: מיון הרשימה לפני ההצגה כדי למנוע קפיצות */}
+                    {[...items].sort((a, b) => a.id - b.id).map((item) => (
                         <ListGroup.Item key={item.id} className="py-3">
                             <div className="d-flex justify-content-between mb-2">
                                 <div className="d-flex align-items-center gap-3">
                                     
-                                    {/* --- כאן קוד התמונה --- */}
+                                    {/* --- תמונת מוצר --- */}
                                     {item.product.imageUrl ? (
                                         <Image 
                                             src={item.product.imageUrl} 
                                             rounded 
-                                            style={{ width: '60px', height: '60px', objectFit: 'cover' }} 
+                                            style={{ width: '60px', height: '60px', objectFit: 'contain', border: '1px solid #eee' }} 
                                         />
                                     ) : (
-                                        // ריבוע אפור אם אין תמונה
                                         <div style={{ width: '60px', height: '60px', background: '#eee', borderRadius: '5px' }}></div>
                                     )}
-                                    {/* ----------------------- */}
+                                    {/* ------------------ */}
 
                                     <div>
                                         <h6 className="mb-1">{item.product.name}</h6>

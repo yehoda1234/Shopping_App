@@ -7,6 +7,8 @@ import { AuthController } from './auth.controller';
 import { UsersModule } from 'src/users/users.module';
 import { JwtStrategy } from './jwt.strategy';
 
+import { GoogleStrategy } from './strategies/google.strategy';
+
 @Module({
   imports: [
     UsersModule,
@@ -20,7 +22,7 @@ import { JwtStrategy } from './jwt.strategy';
     }),
     }),
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, GoogleStrategy],
   controllers: [AuthController]
 })
 export class AuthModule {}

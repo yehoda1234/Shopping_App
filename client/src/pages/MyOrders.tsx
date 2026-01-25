@@ -1,105 +1,142 @@
-import { use, useEffect, useState } from 'react';
-import { Container, Table, Badge, Spinner, Alert, Button } from 'react-bootstrap';
+import { useEffect, useState } from 'react';
+import { Container, Table, Spinner, Badge, Card, Row, Col, Button } from 'react-bootstrap';
 import { ordersService } from '../services/api';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { BoxSeam, Calendar3, CashCoin } from 'react-bootstrap-icons';
 
+export default function Orders() {
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-interface OrderItem {
-    id: number;
-    quantity: number;
-    priceAtPurchase: number;
-    product: { name: string; imageUrl?: string};
-}
+  useEffect(() => {
+    loadOrders();
+  }, []);
 
+  const loadOrders = async () => {
+    try {
+      const data = await ordersService.getMyOrders();
+      setOrders(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-interface Order {
-    id: number;
-    totalAmount: number;
-    status: string;
-    createdAt: string;
-    items: OrderItem[];
-}
+  const getStatusColor = (status: string) => {
+    switch(status) {
+        case 'PENDING': return 'warning';
+        case 'SHIPPED': return 'primary';
+        case 'DELIVERED': return 'success';
+        case 'CANCELLED': return 'danger';
+        default: return 'secondary';
+    }
+  };
 
+  const getStatusText = (status: string) => {
+    switch(status) {
+        case 'PENDING': return 'PENDING';
+        case 'SHIPPED': return 'SHIPPED';
+        case 'DELIVERED': return 'DELIVERED';
+        case 'CANCELLED': return 'CANCELLED';
+        default: return status;
+    }
+  };
 
-export default function MyOrders() {
-    const [orders, setOrders] = useState<Order[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+  if (loading) return <div className="text-center mt-5"><Spinner animation="border" variant="primary"/></div>;
 
-    useEffect(() => {
-        const fetchOrders = async () => {
-            try {
-                const data = await ordersService.getMyOrders();
-                setOrders(data);
-            } catch (err) {
-                console.error(err);
-                setError('לא הצלחנו לטעון את ההזמנות');
-            } finally {
-                setLoading(false);
-            }
-        };
+  if (orders.length === 0) {
+      return (
+          <Container className="text-center mt-5">
+              <h3>אין לך עדיין הזמנות 🤷‍♂️</h3>
+              <Button variant="primary" onClick={() => navigate('/store')}>התחל לקנות</Button>
+          </Container>
+      );
+  }
 
-        fetchOrders();
-    }, []);
+  return (
+    <Container className="py-4">
+      <h2 className="mb-4 fw-bold">ההזמנות שלי 📦</h2>
 
-// פונקציה לבחירת צבע התגית לפי הסטטוס
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'PENDING': return 'warning';
-      case 'SHIPPED': return 'info';
-      case 'DELIVERED': return 'success';
-      case 'CANCELLED': return 'danger';
-      default: return 'secondary';
-     }
-    };
-
-    if (loading) return <div className='text-center mt-5'><Spinner animation='border' /></div>;
-    if (error) return <Alert variant='danger' className='m-5'>{error}</Alert>;
-
-    return (
-       <Container className="py-5">
-      <h2 className="mb-4">ההזמנות שלי 📦</h2>
-
-      {orders.length === 0 ? (
-        <div className="text-center">
-            <p>עדיין לא ביצעת הזמנות.</p>
-            <Button as={Link as any} to="/" variant="primary">התחל לקנות</Button>
+      {/* ================================================= */}
+      {/* תצוגה למחשב (Desktop) - טבלה רגילה              */}
+      {/* ================================================= */}
+      <div className="d-none d-md-block"> 
+        <div className="bg-white rounded shadow-sm overflow-hidden">
+            <Table hover className="mb-0 align-middle">
+            <thead className="bg-light">
+                <tr>
+                <th className="py-3">מספר הזמנה</th>
+                <th>תאריך</th>
+                <th>פריטים</th>
+                <th>סה"כ לתשלום</th>
+                <th>סטטוס</th>
+                </tr>
+            </thead>
+            <tbody>
+                {orders.map((order) => (
+                <tr key={order.id}>
+                    <td className="fw-bold">#{order.id}</td>
+                    <td>{new Date(order.createdAt).toLocaleDateString()}</td>
+                    <td>
+                        <small className="text-muted">
+                            {order.items?.map((item: any) => 
+                                `${item.product?.name} (x${item.quantity})`
+                            ).join(', ')}
+                        </small>
+                    </td>
+                    <td>₪{Number(order.totalAmount).toFixed(2)}</td>
+                    <td>
+                        <Badge bg={getStatusColor(order.status)} className="px-3 py-2 rounded-pill">
+                            {getStatusText(order.status)}
+                        </Badge>
+                    </td>
+                </tr>
+                ))}
+            </tbody>
+            </Table>
         </div>
-      ) : (
-        <Table striped bordered hover responsive className="shadow-sm bg-white">
-          <thead className="bg-light">
-            <tr>
-              <th># מספר הזמנה</th>
-              <th>תאריך</th>
-              <th>סטטוס</th>
-              <th>סה"כ לתשלום</th>
-              <th>פריטים</th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order) => (
-              <tr key={order.id}>
-                <td>{order.id.toString().substring(0, 8)}...</td> {/* מציגים רק חלק מה-ID אם הוא ארוך */}
-                <td>{new Date(order.createdAt).toLocaleDateString('he-IL')}</td>
-                <td>
-                    <Badge bg={getStatusBadge(order.status)}>{order.status}</Badge>
-                </td>
-                <td className="fw-bold">₪{Number(order.totalAmount).toFixed(2)}</td>
-                <td>
-                    <ul className="list-unstyled mb-0">
-                        {order.items.map(item => (
-                            <li key={item.id} className="text-muted small">
-                                {item.quantity} x {item.product.name}
-                            </li>
-                        ))}
-                    </ul>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      )}
+      </div>
+
+      {/* ================================================= */}
+      {/* תצוגה לנייד (Mobile) - כרטיסיות                 */}
+      {/* ================================================= */}
+      <div className="d-md-none">
+          {orders.map((order) => (
+              <Card key={order.id} className="mb-3 shadow-sm border-0">
+                  <Card.Header className="bg-white d-flex justify-content-between align-items-center py-3">
+                      <span className="fw-bold">הזמנה #{order.id}</span>
+                      <Badge bg={getStatusColor(order.status)}>{getStatusText(order.status)}</Badge>
+                  </Card.Header>
+                  <Card.Body>
+                      <Row className="mb-3 g-2">
+                          <Col xs={6}>
+                              <div className="text-muted small"><Calendar3 className="me-1"/> תאריך</div>
+                              <div>{new Date(order.createdAt).toLocaleDateString()}</div>
+                          </Col>
+                          <Col xs={6}>
+                              <div className="text-muted small"><CashCoin className="me-1"/> סה"כ</div>
+                              <div className="fw-bold text-primary">₪{Number(order.totalAmount).toFixed(2)}</div>
+                          </Col>
+                      </Row>
+                      
+                      <div className="bg-light p-2 rounded">
+                          <div className="text-muted small mb-1"><BoxSeam className="me-1"/> פריטים:</div>
+                          <ul className="list-unstyled mb-0 small">
+                            {order.items?.map((item: any, idx: number) => (
+                                <li key={idx} className="d-flex justify-content-between">
+                                    <span>{item.product?.name}</span>
+                                    <span className="text-muted">x{item.quantity}</span>
+                                </li>
+                            ))}
+                          </ul>
+                      </div>
+                  </Card.Body>
+              </Card>
+          ))}
+      </div>
+
     </Container>
   );
 }
-

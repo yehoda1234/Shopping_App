@@ -1,69 +1,34 @@
-// import { Container } from "react-bootstrap";
-// import MainNavbar from "./components/Navbar";
-// import { Routes, Route } from "react-router-dom";
-// import Store from "./pages/Store";
-
-
-
-// function App() {
-//   return (
-//     <div className="d-flex flex-column min-vh-100 bg-light">
-
-//        <MainNavbar />
-//       <main className="flex-grow-1">
-//         <Routes>
-//           <Route path="/" element={<Store />} />
-//           <Route path="/store" element={<Store />} />
-//         </Routes>
-//         <Container>
-//           <h1 className="text-center mt-5">ברוכים הבאים לחנות </h1>
-//           <p className="text-center">זהו עמוד הבית של האפליקציה שלי.</p>
-//         </Container>
-//       </main>
-
-//       <footer className="bg-light text-center py-3 mt-4 border-top">
-//         <small className="text-muted">@ כל הזכויות שמורות 2026</small>
-//       </footer>
-
-
-//     </div>
-//   );
-// }
-
-// export default App;
-
-
-
-
-
-
-
-
 import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import { Container } from 'react-bootstrap';
+
+// רכיבים ודפים
 import MainNavbar from './components/Navbar';
+import CartDrawer from './components/CartDrawer';
+import Home from './pages/Home';
 import Store from './pages/Store';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import Checkout from './pages/Checkout';
-import CartDrawer from './components/CartDrawer';
 import MyOrders from './pages/MyOrders';
 import AdminDashboard from './pages/AdminDashboard';
-import { Container } from 'react-bootstrap';
+import AuthCallback from './pages/AuthCallback';
+import Profile from './pages/Profile';
+import ProductDetails from './pages/ProductDetails'; // 👇 הייבוא החדש
+
+// Redux Hooks
 import { useAppDispatch, useAppSelector } from './features/hooks';
 import { fetchCart } from './features/cart/cartSlice';
 
 function App() {
   const dispatch = useAppDispatch();
-  // בודקים האם המשתמש מחובר (נטען מה-LocalStorage ב-AuthSlice)
   const { isAuthenticated } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
-    // אם המשתמש מחובר - נטען את העגלה שלו מהשרת מיד!
     if (isAuthenticated) {
       dispatch(fetchCart());
     }
-  }, [isAuthenticated, dispatch]); // ירוץ כל פעם שסטטוס ההתחברות משתנה
+  }, [isAuthenticated, dispatch]);
 
   return (
     <div className="d-flex flex-column min-vh-100 bg-light">
@@ -71,13 +36,19 @@ function App() {
 
       <main className="flex-grow-1">
         <Routes>
-          <Route path="/" element={<Store />} />
+          <Route path="/" element={<Home />} />
           <Route path="/store" element={<Store />} />
+          
+          {/* 👇 הנתיב החדש לדף המוצר 👇 */}
+          <Route path="/product/:id" element={<ProductDetails />} />
+          
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/orders" element={<MyOrders />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
         </Routes>
       </main>
 
@@ -93,5 +64,3 @@ function App() {
 }
 
 export default App;
-          
-  

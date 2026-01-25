@@ -5,6 +5,10 @@ interface User {
     id: number;
     email: string;
     role: string;
+    firstName?: string; // הוספנו ? כי אולי זה יהיה ריק בהתחלה
+    lastName?: string;
+    picture?: string;
+    provider?: string;
 }
 
 

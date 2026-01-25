@@ -66,7 +66,7 @@ export class CartService {
   }
 
 
-  async updateItemQuantity(user: any,itemId: number, quantity: number) {
+  async updateItemQuantity(user: User,itemId: number, quantity: number) {
     await this.cartItemRepository.update(itemId, { quantity });
     return this.getCart(user);
   

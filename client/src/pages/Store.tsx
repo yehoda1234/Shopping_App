@@ -1,30 +1,74 @@
 import { useEffect, useState } from 'react';
-import { Container, Row, Col, Spinner, Alert } from 'react-bootstrap';
-import type { Product } from '../types/product';
-import { productsService } from '../services/api';
+import { Container, Row, Col, Spinner, Alert, Form, InputGroup } from 'react-bootstrap';
+import type { Product, Category } from '../types/product'; // וודא שזה מייבא גם את Category
+import { productsService, categoriesService } from '../services/api'; // הוספנו את categoriesService
 import ProductCard from '../components/ProductCard';
+import { Search } from 'react-bootstrap-icons'; // הוספנו אייקון חיפוש
 
 export default function Store() {
+  // נתונים גולמיים מהשרת
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]); // סטייט לקטגוריות
+  
+  // נתונים לסינון ותצוגה
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState('');
+
+  // סטייטים למצב טעינה ושגיאות
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // 1. טעינה ראשונית של הכל (מוצרים + קטגוריות)
   useEffect(() => {
-    // קריאה לשרת
-    const fetchProducts = async () => {
+    const fetchData = async () => {
       try {
-        const data = await productsService.getAll();
-        setProducts(data);
+        setLoading(true);
+        // טעינה במקביל כדי לחסוך זמן
+        const [productsData, categoriesData] = await Promise.all([
+            productsService.getAll(),
+            categoriesService.getAll()
+        ]);
+
+        // const sortedProducts = productsData.sort((a: any, b: any) => a.id - b.id);
+
+        setProducts(productsData);
+        setCategories(categoriesData);
+        setFilteredProducts(productsData); // בהתחלה מציגים את הכל
+
       } catch (err) {
-        setError('לא הצלחנו לטעון את המוצרים. נסה שוב מאוחר יותר.');
+        setError('לא הצלחנו לטעון את החנות. נסה שוב מאוחר יותר.');
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
+    fetchData();
   }, []);
+
+  // 2. מנוע הסינון - רץ אוטומטית כשמשנים חיפוש או קטגוריה
+  useEffect(() => {
+    let result = products;
+
+    // סינון לפי קטגוריה
+    if (selectedCategoryId !== '') {
+        // המרה למספר כי ה-value ב-Select הוא סטרינג
+        result = result.filter(p => p.category?.id === Number(selectedCategoryId));
+    }
+
+    // סינון לפי טקסט (חיפוש)
+    if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        result = result.filter(p => 
+            p.name.toLowerCase().includes(term) || 
+            p.description.toLowerCase().includes(term)
+        );
+    }
+
+    setFilteredProducts(result);
+  }, [searchTerm, selectedCategoryId, products]);
+
 
   if (loading) {
     return (
@@ -41,19 +85,64 @@ export default function Store() {
 
   return (
     <Container className="py-4">
-      <h2 className="mb-4 text-center">המוצרים שלנו ✨</h2>
+      <div className="text-center mb-5">
+          <h2 className="mb-2 fw-bold">המוצרים שלנו ✨</h2>
+          <p className="text-muted">איכות ושירות מעל הכל</p>
+      </div>
+
+      {/* --- סרגל חיפוש וסינון --- */}
+      <div className="bg-light p-4 rounded shadow-sm mb-5 border">
+        <Row className="g-3 align-items-center">
+            {/* בחירת קטגוריה */}
+            <Col md={4}>
+                <Form.Select 
+                    value={selectedCategoryId} 
+                    onChange={(e) => setSelectedCategoryId(e.target.value)}
+                    className="border-secondary bg-white"
+                    style={{ cursor: 'pointer' }}
+                >
+                    <option value="">כל הקטגוריות</option>
+                    {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                </Form.Select>
+            </Col>
+
+            {/* חיפוש חופשי */}
+            <Col md={8}>
+                <InputGroup>
+                    <InputGroup.Text className="bg-white border-end-0"><Search className="text-muted"/></InputGroup.Text>
+                    <Form.Control 
+                        placeholder="חפש מוצר..." 
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="border-start-0"
+                    />
+                </InputGroup>
+            </Col>
+        </Row>
+      </div>
       
+      {/* --- רשימת המוצרים המסוננת --- */}
       <Row>
-        {products.map((product) => (
-          // xs=1 (טור אחד בנייד), md=3 (שלושה טורים במחשב רגיל), lg=4 (ארבעה במסך ענק)
+        {filteredProducts.map((product) => (
           <Col key={product.id} xs={12} md={6} lg={4} xl={3} className="mb-4">
             <ProductCard product={product} />
           </Col>
         ))}
       </Row>
       
-      {products.length === 0 && (
-          <div className="text-center text-muted">עדיין אין מוצרים בחנות.</div>
+      {filteredProducts.length === 0 && (
+          <div className="text-center py-5">
+            <h4 className="text-muted">לא נמצאו מוצרים 😕</h4>
+            <p className="text-secondary">נסה לשנות את הקטגוריה או את מילות החיפוש</p>
+            <button 
+                className="btn btn-link text-decoration-none" 
+                onClick={() => {setSearchTerm(''); setSelectedCategoryId('');}}
+            >
+                נקה סינון
+            </button>
+          </div>
       )}
     </Container>
   );

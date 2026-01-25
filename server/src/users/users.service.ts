@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
+import { UserRole } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -67,7 +68,35 @@ export class UsersService {
     return this.userRepository.save(updatedUser);
   }
   
-  remove(id: number) { return `Remove logic`; }
+  remove(id: number) { return `Remove logic`; };
+
+
+async findOrCreateOAuthUser(email: string, provider: string, profile: any) {
+   
+    let user = await this.userRepository.findOne({ where: { email } });
+
+    if (user) {
+      if (provider === 'google' && !user.googleId) {
+        user.googleId = profile.id;
+        user.provider = 'google';
+        await this.userRepository.save(user);
+      }
+      return user;
+    }
+
+    // 2. יצירת משתמש חדש
+    user = this.userRepository.create({
+      email: email,                  // זה חייב להיות מחרוזת!
+      firstName: profile.firstName,  // מגיע מהפרופיל
+      lastName: profile.lastName,    // מגיע מהפרופיל
+      picture: profile.picture,
+      provider: provider,
+      googleId: profile.id,
+      password: null,
+    });
+
+    return this.userRepository.save(user);
+  }
 }
 
 

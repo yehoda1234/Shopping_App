@@ -16,15 +16,26 @@ export class User {
     @Column({ unique: true })
     email: string;
 
-    @Column({ select: false })
+    @Column({ type: 'varchar',select: false, nullable: true})
     @Exclude()
-    password: string;
+    password: string | null;
+
 
     @Column()
     firstName: string;
 
     @Column()
     lastName: string;
+
+    @Column({ nullable: true })
+    picture: string;
+
+    @Column({ nullable: true })
+    googleId: string;
+
+    @Column({ default: 'local'})
+    provider: string;
+
 
     @Column({
         type: 'enum',

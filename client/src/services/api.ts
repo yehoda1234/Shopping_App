@@ -16,13 +16,7 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-});
+
 
 api.interceptors.response.use(
     (response) => response,
@@ -41,6 +35,12 @@ api.interceptors.response.use(
 export const productsService = {
     getAll: async () => {
         const response = await api.get<Product[]>("/products");
+        return response.data;
+    },
+
+
+    getOne: async (id: number) => {
+        const response = await api.get(`/products/${id}`);
         return response.data;
     },
 
@@ -72,6 +72,13 @@ export const authService = {
         const response = await api.post("/auth/login", { email, password });
         return response.data;
     },
+
+    getProfile: async () => {
+        const response = await api.get("/users/profile");
+        return response.data;
+    },
+
+
 };
 
 export interface CartItem {
@@ -125,12 +132,36 @@ export const ordersService = {
         return response.data;
     },
 
+    getAllOrders: async () => {
+        const response = await api.get("/orders/all");
+        return response.data;
+    },
+
+
     updateStatus: async (id: number, status: string) => {
         const response = await api.patch(`/orders/${id}/status`, { status });
         return response.data;
     }
 };
 
+
+export const categoriesService = {
+    getAll: async () => {
+        const response = await api.get("/categories");
+        return response.data;
+    },
+
+    create: async (name: string) => {
+        const response = await api.post("/categories", { name });
+        return response.data;
+    },
+
+    delete: async (id: number) => {
+        await api.delete(`/categories/${id}`);
+        return id;
+    }
+
+};
 
 
 
