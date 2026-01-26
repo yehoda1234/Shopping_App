@@ -4,7 +4,7 @@ import { Container, Row, Col, Button, Badge, Spinner, Image, Stack } from 'react
 import { productsService } from '../services/api';
 import { useAppDispatch, useAppSelector } from '../features/hooks'; // הוספנו את Selector
 import { addToCart } from '../features/cart/cartSlice';
-import { CartPlus, ArrowRight, Truck, LightningChargeFill, ArrowLeft } from 'react-bootstrap-icons';
+import { CartPlus, Truck, LightningChargeFill, ArrowLeft } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import type { Product } from '../types/product';
 

@@ -14,7 +14,8 @@ import MyOrders from './pages/MyOrders';
 import AdminDashboard from './pages/AdminDashboard';
 import AuthCallback from './pages/AuthCallback';
 import Profile from './pages/Profile';
-import ProductDetails from './pages/ProductDetails'; // 👇 הייבוא החדש
+import ProductDetails from './pages/ProductDetails';
+import NotFound from './pages/NotFound';
 
 // Redux Hooks
 import { useAppDispatch, useAppSelector } from './features/hooks';
@@ -49,6 +50,8 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="*" element={<NotFound />} />
+
         </Routes>
       </main>
 
