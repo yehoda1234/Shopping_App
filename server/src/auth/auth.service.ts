@@ -1,10 +1,12 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
@@ -18,14 +20,14 @@ export class AuthService {
       const { password, ...result } = user;
       return result;
     }
+    this.logger.warn(`Failed login attempt for email: ${email}`);
     return null;
   }
 
   // פונקציה ליצירת טוקן (משותפת גם לרגיל וגם לגוגל)
   async login(user: any) {
-    console.log('--- Login Attempt ---');
-    console.log('User ID:', user.id);
-    console.log('User Role:', user.role);
+   this.logger.log(`User login success: ID ${user.id}, Role: ${user.role}`);
+
 
     const payload = { 
         email: user.email, 
@@ -44,6 +46,10 @@ export class AuthService {
   }
 
   async validateOAuthLogin(email: string, provider: string, profile: any) {
+
+    this.logger.log(`OAuth login processing (${provider}) for: ${email}`);
+
+
     const user = await this.usersService.findOrCreateOAuthUser(email, provider, profile);
     
    

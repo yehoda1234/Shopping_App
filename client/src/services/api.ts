@@ -1,5 +1,6 @@
 import axios from "axios";
 import type {Product}  from "../types/product";
+import { toast } from "react-toastify";
 
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3000';
@@ -21,10 +22,48 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response && error.response.status === 401) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            window.location.href = '/login';
+        let errorMessage = "אירעה שגיאה בלתי צפויה";
+
+
+        if (error.response) {
+            const status = error.response.status;
+            const data = error.response.data;
+
+            if (data && data.message) {
+                errorMessage = Array.isArray(data.message) ? data.message[0] : data.message;
+            }
+
+            switch (status) {
+                case 400:
+                    toast.error(errorMessage);
+                    break;
+
+                
+                case 401:
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = '/login';
+                    return Promise.reject(error);
+
+                case 403:
+                    toast.error("אין לך הרשאה לבצע פעולה זו ⛔");
+                    break;
+
+                case 404:
+                    toast.error("המשאב המבוקש לא נמצא 🔍");
+                    break;
+
+                case 500:
+                    toast.error("שגיאת שרת פנימית. אנא נסה שוב מאוחר יותר 🔧");
+                    break;
+
+                default:
+                    toast.error(errorMessage);
+            }
+        } else if (error.request) {
+            toast.error("שגיאת תקשורת. אנא בדוק את החיבור לאינטרנט 🌐");
+        } else {
+            toast.error(error.message);
         }
         return Promise.reject(error);
     }

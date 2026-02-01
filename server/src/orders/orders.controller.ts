@@ -32,7 +32,6 @@ export class OrdersController {
   }
 
 
-
   @Get(':id')
   findOne(@Request() req, @Param('id') id: string) {
     return this.ordersService.findOne(+id, req.user);
@@ -41,7 +40,7 @@ export class OrdersController {
  
 
   @Patch(':id/status')
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
   updateStatus(@Param('id') id: string, @Body() updateOrderStatusDto: UpdateOrderStatusDto) {
     return this.ordersService.updateStatus(+id, updateOrderStatusDto.status);

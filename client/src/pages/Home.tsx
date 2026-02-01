@@ -37,14 +37,11 @@ export default function Home() {
             <Col md={6} className="text-center text-md-start">
               <h1 className="display-4 fw-bold mb-3">הטכנולוגיה החדשה<br/><span className="text-primary">כבר כאן.</span></h1>
               <p className="lead text-muted mb-4">
-                גלה את הקולקציה החדשה שלנו. המחירים הכי טובים, האיכות הכי גבוהה, והמשלוח? עלינו.
+                גלה את הקולקציה החדשה שלנו. המחירים הכי טובים, האיכות הכי גבוהה, והמשלוח הכי מהיר בשוק. 
               </p>
               <div className="d-flex gap-3 justify-content-center justify-content-md-start">
                   <Button as={Link as any} to="/store" variant="dark" size="lg" className="px-4 shadow-sm">
                     לקטלוג המלא <ArrowRight className="ms-2"/>
-                  </Button>
-                  <Button as={Link as any} to="/register" variant="outline-dark" size="lg" className="px-4">
-                    הצטרף עכשיו
                   </Button>
               </div>
             </Col>

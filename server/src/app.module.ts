@@ -29,8 +29,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
         autoLoadEntities: true,
-        synchronize: true, // Note: set to false in production
-        // logging: true,
+        synchronize: process.env.NODE_ENV !== 'production',
       }),
     }),
 

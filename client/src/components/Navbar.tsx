@@ -10,7 +10,7 @@ import { toggleCart } from '../features/cart/cartSlice';
 export default function MainNavbar() {
   // קריאה למשתמש מתוך הזיכרון של Redux
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
-  const { items} = useAppSelector((state) => state.cart);
+  const { items } = useAppSelector((state) => state.cart);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
