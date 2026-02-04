@@ -4,7 +4,7 @@ import { useAppSelector } from '../features/hooks';
 import { useNavigate } from 'react-router-dom';
 import { productsService, ordersService, categoriesService } from '../services/api';
 import type { Product } from '../types/product';
-import { Trash, PencilSquare, PlusCircle, FolderPlus, PersonCircle, BoxSeam } from 'react-bootstrap-icons';
+import { Trash, PencilSquare, PlusCircle, FolderPlus, PersonCircle, BoxSeam, ArrowCounterclockwise } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 
 interface Category {
@@ -17,12 +17,16 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
 
   const [products, setProducts] = useState<Product[]>([]);
+  const [trashProducts, setTrashProducts] = useState<Product[]>([]); 
   const [orders, setOrders] = useState<any[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<any>(null); 
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  // 👇 תוספת: סטייט לקובץ החדש בעריכה
+  const [editingFile, setEditingFile] = useState<File | null>(null);
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [newProduct, setNewProduct] = useState({
     name: '', description: '', price: '' as any, stock: '' as any, categoryId: '' as any, file: null as File | null
@@ -41,13 +45,15 @@ export default function AdminDashboard() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [productsData, ordersData, categoriesData] = await Promise.all([
+      const [productsData, trashData, ordersData, categoriesData] = await Promise.all([
           productsService.getAll(),
+          productsService.getTrash(), 
           ordersService.getAllOrders(),
           categoriesService.getAll()
       ]);
 
       if (Array.isArray(productsData)) setProducts(productsData.sort((a, b) => b.id - a.id));
+      if (Array.isArray(trashData)) setTrashProducts(trashData); 
       if (Array.isArray(ordersData)) setOrders(ordersData);
       if (Array.isArray(categoriesData)) setCategories(categoriesData);
     } catch (error) {
@@ -70,13 +76,31 @@ export default function AdminDashboard() {
   const groupedOrders = groupOrdersByUser();
 
   const handleDeleteProduct = async (id: number) => {
-    if (window.confirm('למחוק את המוצר?')) {
+    if (window.confirm('למחוק את המוצר? (הוא יעבור לסל המחזור)')) {
       try {
         await productsService.deleteProduct(id);
-        setProducts(products.filter(p => p.id !== id));
-        toast.success('המוצר נמחק בהצלחה! 🗑️');
+        const deletedItem = products.find(p => p.id === id);
+        if (deletedItem) {
+            setTrashProducts([deletedItem, ...trashProducts]);
+            setProducts(products.filter(p => p.id !== id));
+        }
+        toast.success('המוצר הועבר לסל המחזור! ♻️');
       } catch (e) { toast.error('שגיאה במחיקת המוצר');}
     }
+  };
+
+  const handleRestoreProduct = async (id: number) => {
+      try {
+          await productsService.restoreProduct(id);
+          const restoredItem = trashProducts.find(p => p.id === id);
+          if (restoredItem) {
+              setProducts([restoredItem, ...products]);
+              setTrashProducts(trashProducts.filter(p => p.id !== id));
+          }
+          toast.success('המוצר שוחזר בהצלחה! 🎉');
+      } catch (e) {
+          toast.error('שגיאה בשחזור המוצר');
+      }
   };
 
   const handleCreateProduct = async () => {
@@ -103,20 +127,33 @@ export default function AdminDashboard() {
     } catch (e) { toast.error('שגיאה ביצירת המוצר') }
   };
 
+  // 👇 פונקציה מעודכנת לשמירת שינויים (תומכת בקבצים)
   const handleSaveChanges = async () => {
     if (!editingProduct) return;
     try {
-      const updatePayload = {
-        name: editingProduct.name,
-        price: Number(editingProduct.price),
-        stock: Number(editingProduct.stock),
-        description: editingProduct.description,
-        imageUrl: editingProduct.imageUrl,
-        categoryId: Number(editingProduct.categoryId)
-      };
-      await productsService.updateProduct(editingProduct.id, updatePayload);
+      // אנחנו בונים FormData כדי לתמוך בשליחת קובץ
+      const formData = new FormData();
+      formData.append('name', editingProduct.name);
+      formData.append('price', editingProduct.price);
+      formData.append('stock', editingProduct.stock);
+      formData.append('description', editingProduct.description || '');
+      // אם לא נבחר קובץ חדש, נשלח את ה-URL הישן (רק אם השרת מצפה לזה, אבל לרוב השרת מתעלם אם לא נשלח קובץ)
+      // כאן השרת שלנו פשוט לא יעדכן תמונה אם לא נשלח file
+      if (editingProduct.categoryId) {
+          formData.append('categoryId', editingProduct.categoryId);
+      }
+
+      // אם נבחר קובץ חדש - נוסיף אותו
+      if (editingFile) {
+          formData.append('file', editingFile);
+      }
+
+      // שולחים לשרת (TypeScript might complain slightly if not adjusted, but FormData works)
+      await productsService.updateProduct(editingProduct.id, formData as any);
+      
       loadData();
       setShowEditModal(false);
+      setEditingFile(null); // איפוס הקובץ
       toast.info('המוצר עודכן בהצלחה 👍');
     } catch (e) { toast.error('שגיאה בעדכון המוצר');}
   };
@@ -208,6 +245,7 @@ export default function AdminDashboard() {
                                     <div className="d-flex gap-2">
                                         <Button variant="outline-primary" size="sm" onClick={() => {
                                             setEditingProduct({ ...p, categoryId: p.category?.id || '' }); 
+                                            setEditingFile(null); // איפוס קובץ קודם
                                             setShowEditModal(true);
                                         }}><PencilSquare/></Button>
                                         <Button variant="outline-danger" size="sm" onClick={() => handleDeleteProduct(p.id)}><Trash/></Button>
@@ -244,6 +282,7 @@ export default function AdminDashboard() {
                                 <div className="d-flex gap-2">
                                     <Button variant="outline-primary" size="sm" onClick={() => {
                                         setEditingProduct({ ...p, categoryId: p.category?.id || '' }); 
+                                        setEditingFile(null); // איפוס
                                         setShowEditModal(true);
                                     }}><PencilSquare/></Button>
                                     <Button variant="outline-danger" size="sm" onClick={() => handleDeleteProduct(p.id)}><Trash/></Button>
@@ -256,10 +295,47 @@ export default function AdminDashboard() {
         </Tab>
 
         {/* ======================= */}
+        {/* טאב סל מחזור ♻️         */}
+        {/* ======================= */}
+        <Tab eventKey="trash" title={`סל מחזור ♻️ (${trashProducts.length})`}>
+            {trashProducts.length === 0 ? <p className="text-center mt-3 text-muted">סל המחזור ריק.</p> :
+            <div className="table-responsive">
+                <Table striped bordered hover className="bg-white shadow-sm align-middle mt-3">
+                    <thead className="table-danger">
+                        <tr>
+                            <th>ID</th>
+                            <th>תמונה</th> 
+                            <th>שם</th>
+                            <th>מחיר</th>
+                            <th>פעולות</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {trashProducts.map(p => (
+                            <tr key={p.id}>
+                                <td>{p.id}</td>
+                                <td>{p.imageUrl ? <Image src={p.imageUrl} style={{width:40}} rounded /> : '-'}</td>
+                                <td className="fw-bold text-decoration-line-through text-muted">{p.name}</td>
+                                <td>₪{p.price}</td>
+                                <td>
+                                    <Button variant="success" size="sm" onClick={() => handleRestoreProduct(p.id)}>
+                                        <ArrowCounterclockwise className="me-2"/> שחזר מוצר
+                                    </Button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
+            </div>
+            }
+        </Tab>
+
+        {/* ======================= */}
         {/* טאב הזמנות              */}
         {/* ======================= */}
         <Tab eventKey="orders" title="ניהול הזמנות 📑">
-            {orders.length === 0 ? <p className="text-center mt-3">אין הזמנות.</p> : 
+             {/* ... תוכן טאב הזמנות נשאר אותו דבר ... */}
+             {orders.length === 0 ? <p className="text-center mt-3">אין הזמנות.</p> : 
             
             <Accordion defaultActiveKey="0" className="mt-3 shadow-sm">
                 {Object.keys(groupedOrders).map((email, index) => {
@@ -361,9 +437,10 @@ export default function AdminDashboard() {
         </Tab>
       </Tabs>
 
-      {/* --- מודלים נשארו אותו דבר --- */}
+      {/* --- מודלים --- */}
       <Modal show={showCatModal} onHide={() => setShowCatModal(false)} centered scrollable>
-        <Modal.Header closeButton><Modal.Title>ניהול קטגוריות</Modal.Title></Modal.Header>
+         {/* ... מודל קטגוריות נשאר זהה ... */}
+         <Modal.Header closeButton><Modal.Title>ניהול קטגוריות</Modal.Title></Modal.Header>
         <Modal.Body>
             <div className="mb-4">
                 <h6 className="text-muted mb-2">קטגוריות קיימות:</h6>
@@ -392,7 +469,8 @@ export default function AdminDashboard() {
       </Modal>
 
       <Modal show={showAddModal} onHide={() => setShowAddModal(false)}>
-        <Modal.Header closeButton><Modal.Title>מוצר חדש</Modal.Title></Modal.Header>
+         {/* ... מודל הוספה נשאר זהה ... */}
+         <Modal.Header closeButton><Modal.Title>מוצר חדש</Modal.Title></Modal.Header>
         <Modal.Body>
             <Form>
                 <Form.Control className="mb-2" placeholder="שם המוצר" onChange={(e: any) => setNewProduct({...newProduct, name: e.target.value})} />
@@ -437,7 +515,21 @@ export default function AdminDashboard() {
                     </Col>
                 </Row>
                 <Form.Control className="mb-2" as="textarea" value={editingProduct.description} onChange={(e: any) => setEditingProduct({...editingProduct, description: e.target.value})} />
-                <Form.Control className="mb-2" value={editingProduct.imageUrl} onChange={(e: any) => setEditingProduct({...editingProduct, imageUrl: e.target.value})} />
+                
+                {/* 👇 כאן השינוי במודל העריכה: */}
+                <div className="mb-2">
+                    <Form.Label>תמונה נוכחית:</Form.Label>
+                    <div className="mb-2 d-flex align-items-center gap-2">
+                         <Form.Control value={editingProduct.imageUrl || ''} disabled readOnly style={{backgroundColor: '#f8f9fa'}} />
+                         {editingProduct.imageUrl && <Image src={editingProduct.imageUrl} style={{width: 40, height: 40, objectFit: 'cover'}} rounded />}
+                    </div>
+                </div>
+                
+                <Form.Group className="mb-2">
+                    <Form.Label>החלף תמונה (אופציונלי):</Form.Label>
+                    <Form.Control type="file" onChange={(e: any) => setEditingFile(e.target.files[0])} />
+                </Form.Group>
+
             </Form>}
         </Modal.Body>
         <Modal.Footer><Button onClick={handleSaveChanges}>שמור שינויים</Button></Modal.Footer>

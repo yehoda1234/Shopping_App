@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, IsNull, Not } from 'typeorm'; // 👇 הוספנו IsNull ו-Not
 import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -22,16 +22,26 @@ export class ProductsService {
   }
 
   async findAll() {
-    return await this.productRepository.find();
+    return await this.productRepository.find({
+        order: { id: 'DESC' }
+    });
   }
 
-   async findOne(id: number) {
-    const product =  await this.productRepository.findOneBy({ id });
+  async findTrash() {
+      return await this.productRepository.find({
+          withDeleted: true, // תביא גם את המחוקים
+          where: { deletedAt: Not(IsNull()) }, // תסנן רק את מי שיש לו תאריך מחיקה
+          relations: ['category'],
+          order: { deletedAt: 'DESC' }
+      });
+  }
+
+  async findOne(id: number) {
+    const product = await this.productRepository.findOneBy({ id });
     if (!product) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
     return product;
-
   }
 
   async update(id: number, updateProductDto: UpdateProductDto) {
@@ -41,16 +51,26 @@ export class ProductsService {
     const updatedProduct = this.productRepository.merge(product, {
       ...productData,
       category: categoryId ? { id: categoryId } as any : product.category,
-      
     });
     return await this.productRepository.save(updatedProduct);
   }
 
-   async remove(id: number) {
-    const result = await this.productRepository.delete(id);
+  // 👇  מחיקה רכה
+  async remove(id: number) {
+    // משתמשים ב-softDelete במקום delete
+    const result = await this.productRepository.softDelete(id);
     if (result.affected === 0) {
       throw new NotFoundException(`Product with ID ${id} not found`);
     }
-    return { message: `Product with ID ${id} has been removed` };
+    return { message: `Product with ID ${id} has been moved to trash` };
+  }
+
+  // 👇 פונקציה חדשה: שחזור מוצר
+  async restore(id: number) {
+      const result = await this.productRepository.restore(id);
+      if (result.affected === 0) {
+          throw new NotFoundException(`Product with ID ${id} not found in trash`);
+      }
+      return { message: `Product with ID ${id} has been restored` };
   }
 }

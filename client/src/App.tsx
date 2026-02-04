@@ -23,7 +23,7 @@ import { fetchCart } from './features/cart/cartSlice';
 
 function App() {
   const dispatch = useAppDispatch();
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -48,7 +48,7 @@ function App() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/orders" element={<MyOrders />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin" element={user?.role === 'ADMIN' ? <AdminDashboard /> : <NotFound />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="*" element={<NotFound />} />
 
