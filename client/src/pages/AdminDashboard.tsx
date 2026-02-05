@@ -24,7 +24,7 @@ export default function AdminDashboard() {
 
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
-  // 👇 תוספת: סטייט לקובץ החדש בעריכה
+
   const [editingFile, setEditingFile] = useState<File | null>(null);
 
   const [showAddModal, setShowAddModal] = useState(false);
@@ -127,7 +127,7 @@ export default function AdminDashboard() {
     } catch (e) { toast.error('שגיאה ביצירת המוצר') }
   };
 
-  // 👇 פונקציה מעודכנת לשמירת שינויים (תומכת בקבצים)
+  // פונקציה מעודכנת לשמירת שינויים 
   const handleSaveChanges = async () => {
     if (!editingProduct) return;
     try {
@@ -137,8 +137,7 @@ export default function AdminDashboard() {
       formData.append('price', editingProduct.price);
       formData.append('stock', editingProduct.stock);
       formData.append('description', editingProduct.description || '');
-      // אם לא נבחר קובץ חדש, נשלח את ה-URL הישן (רק אם השרת מצפה לזה, אבל לרוב השרת מתעלם אם לא נשלח קובץ)
-      // כאן השרת שלנו פשוט לא יעדכן תמונה אם לא נשלח file
+
       if (editingProduct.categoryId) {
           formData.append('categoryId', editingProduct.categoryId);
       }
@@ -148,7 +147,6 @@ export default function AdminDashboard() {
           formData.append('file', editingFile);
       }
 
-      // שולחים לשרת (TypeScript might complain slightly if not adjusted, but FormData works)
       await productsService.updateProduct(editingProduct.id, formData as any);
       
       loadData();
@@ -218,9 +216,7 @@ export default function AdminDashboard() {
 
       <Tabs defaultActiveKey="products" className="mb-4">
         
-        {/* ======================= */}
-        {/* טאב מוצרים              */}
-        {/* ======================= */}
+      
         <Tab eventKey="products" title="ניהול מוצרים 📦">
             <div className="d-flex justify-content-end mb-3">
                 <Button variant="success" onClick={() => setShowAddModal(true)}>
@@ -294,9 +290,8 @@ export default function AdminDashboard() {
             </div>
         </Tab>
 
-        {/* ======================= */}
+     
         {/* טאב סל מחזור ♻️         */}
-        {/* ======================= */}
         <Tab eventKey="trash" title={`סל מחזור ♻️ (${trashProducts.length})`}>
             {trashProducts.length === 0 ? <p className="text-center mt-3 text-muted">סל המחזור ריק.</p> :
             <div className="table-responsive">
@@ -330,11 +325,9 @@ export default function AdminDashboard() {
             }
         </Tab>
 
-        {/* ======================= */}
         {/* טאב הזמנות              */}
-        {/* ======================= */}
+
         <Tab eventKey="orders" title="ניהול הזמנות 📑">
-             {/* ... תוכן טאב הזמנות נשאר אותו דבר ... */}
              {orders.length === 0 ? <p className="text-center mt-3">אין הזמנות.</p> : 
             
             <Accordion defaultActiveKey="0" className="mt-3 shadow-sm">
@@ -439,7 +432,7 @@ export default function AdminDashboard() {
 
       {/* --- מודלים --- */}
       <Modal show={showCatModal} onHide={() => setShowCatModal(false)} centered scrollable>
-         {/* ... מודל קטגוריות נשאר זהה ... */}
+         {/* ... מודל קטגוריות  ... */}
          <Modal.Header closeButton><Modal.Title>ניהול קטגוריות</Modal.Title></Modal.Header>
         <Modal.Body>
             <div className="mb-4">
@@ -469,7 +462,7 @@ export default function AdminDashboard() {
       </Modal>
 
       <Modal show={showAddModal} onHide={() => setShowAddModal(false)}>
-         {/* ... מודל הוספה נשאר זהה ... */}
+         {/* ...מודל הוספה  ... */}
          <Modal.Header closeButton><Modal.Title>מוצר חדש</Modal.Title></Modal.Header>
         <Modal.Body>
             <Form>
@@ -516,7 +509,7 @@ export default function AdminDashboard() {
                 </Row>
                 <Form.Control className="mb-2" as="textarea" value={editingProduct.description} onChange={(e: any) => setEditingProduct({...editingProduct, description: e.target.value})} />
                 
-                {/* 👇 כאן השינוי במודל העריכה: */}
+                {/* תמונה מוצר */}
                 <div className="mb-2">
                     <Form.Label>תמונה נוכחית:</Form.Label>
                     <div className="mb-2 d-flex align-items-center gap-2">

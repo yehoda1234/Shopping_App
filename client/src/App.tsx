@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Container } from 'react-bootstrap';
 
-// רכיבים ודפים
 import MainNavbar from './components/Navbar';
 import CartDrawer from './components/CartDrawer';
 import Home from './pages/Home';
@@ -16,8 +15,7 @@ import AuthCallback from './pages/AuthCallback';
 import Profile from './pages/Profile';
 import ProductDetails from './pages/ProductDetails';
 import NotFound from './pages/NotFound';
-
-// Redux Hooks
+ 
 import { useAppDispatch, useAppSelector } from './features/hooks';
 import { fetchCart } from './features/cart/cartSlice';
 
@@ -40,7 +38,6 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/store" element={<Store />} />
           
-          {/* 👇 הנתיב החדש לדף המוצר 👇 */}
           <Route path="/product/:id" element={<ProductDetails />} />
           
           <Route path="/register" element={<Register />} />

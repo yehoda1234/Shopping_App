@@ -5,7 +5,6 @@ import { authService } from '../services/api';
 import { Eye, EyeSlash } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify'; 
 
-// 👇 הוספנו את הכלים של Redux
 import { useAppDispatch } from '../features/hooks';
 import { setCredentials } from '../features/auth/authSlice';
 
@@ -22,7 +21,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   
   const navigate = useNavigate();
-  const dispatch = useAppDispatch(); // 👇 הוספנו את זה
+  const dispatch = useAppDispatch();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,15 +40,12 @@ export default function Register() {
       // 1. הרשמה (יצירת המשתמש בשרת)
       await authService.register(email, password, firstName, lastName);
       
-      // 2. התחברות אוטומטית (Auto-Login) 🚀
       // אנחנו מבצעים לוגין עם אותם פרטים בדיוק
       const loginData = await authService.login(email, password);
       
-      // השרת מחזיר: { access_token: "...", user: { role: "USER", ... } }
       const token = loginData.access_token || loginData.accessToken;
       const user = loginData.user;
 
-      // 3. שמירת הנתונים ב-Redux (בדיוק כמו בדף Login)
       if (token && user) {
           dispatch(setCredentials({ 
               user: user, 
@@ -58,7 +54,6 @@ export default function Register() {
 
           toast.success(`ברוך הבא, ${firstName}! נרשמת ונכנסת בהצלחה 🎉`);
           
-          // 4. מעבר ישיר לחנות (במקום ללוגין)
           navigate('/');
       } else {
           // למקרה נדיר שההרשמה הצליחה אבל הלוגין האוטומטי נכשל

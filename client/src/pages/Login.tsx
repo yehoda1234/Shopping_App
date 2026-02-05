@@ -26,8 +26,6 @@ export default function Login() {
       // 1. שליחת בקשה לשרת
       const data = await authService.login(email, password);
       
-      // השרת עכשיו מחזיר לנו אובייקט ברור:
-      // { access_token: "...", user: { role: "ADMIN", ... } }
       const token = data.access_token || data.accessToken;
       const user = data.user;
 

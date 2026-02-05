@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Button, Badge, Spinner, Image, Stack } from 'react-bootstrap';
 import { productsService } from '../services/api';
-import { useAppDispatch, useAppSelector } from '../features/hooks'; // הוספנו את Selector
+import { useAppDispatch, useAppSelector } from '../features/hooks'; 
 import { addToCart } from '../features/cart/cartSlice';
-import { CartPlus, Truck, LightningChargeFill, ArrowLeft } from 'react-bootstrap-icons';
+import { CartPlus, LightningChargeFill, ArrowLeft } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import type { Product } from '../types/product';
 
@@ -12,8 +12,8 @@ export default function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { isAuthenticated } = useAppSelector(state => state.auth); // בדיקת התחברות
-  
+  const { isAuthenticated } = useAppSelector(state => state.auth); 
+
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -51,11 +51,10 @@ export default function ProductDetails() {
       }
   };
 
-  // 👇 הפונקציה החדשה
   const handleBuyNow = async () => {
       if (checkAuth() && product) {
           await dispatch(addToCart({ productId: product.id, quantity: 1 }));
-          navigate('/checkout'); // מעבר ישיר לתשלום
+          navigate('/checkout');    
       }
   };
 
@@ -101,12 +100,6 @@ export default function ProductDetails() {
                     ) : (
                         <span className="text-danger fw-bold">אזל מהמלאי</span>
                     )}
-                </div>
-
-                <div className="bg-light p-3 rounded mb-4 border">
-                    <div className="d-flex align-items-center text-muted small">
-                        <Truck className="me-2 fs-5"/> משלוח חינם בקנייה מעל 299₪
-                    </div>
                 </div>
 
                 {/* כפתורי פעולה */}

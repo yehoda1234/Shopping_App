@@ -59,9 +59,8 @@ export default function Orders() {
     <Container className="py-4">
       <h2 className="mb-4 fw-bold">ההזמנות שלי 📦</h2>
 
-      {/* ================================================= */}
-      {/* תצוגה למחשב (Desktop) - טבלה רגילה              */}
-      {/* ================================================= */}
+      {/* תצוגה למחשב (Desktop) - טבלה רגילה */}
+    
       <div className="d-none d-md-block"> 
         <div className="bg-white rounded shadow-sm overflow-hidden">
             <Table hover className="mb-0 align-middle">
@@ -99,9 +98,7 @@ export default function Orders() {
         </div>
       </div>
 
-      {/* ================================================= */}
-      {/* תצוגה לנייד (Mobile) - כרטיסיות                 */}
-      {/* ================================================= */}
+      {/* תצוגה לנייד (Mobile) - כרטיסיות */}
       <div className="d-md-none">
           {orders.map((order) => (
               <Card key={order.id} className="mb-3 shadow-sm border-0">

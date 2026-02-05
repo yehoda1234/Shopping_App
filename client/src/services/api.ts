@@ -73,7 +73,6 @@ export const productsService = {
         return response.data;
     },
 
-    // 👇 עדכון: עכשיו מקבל גם FormData
     updateProduct: async (id: number, productData: Partial<Product> | FormData) => {
         const response = await api.patch<Product>(`/products/${id}`, productData);
         return response.data;
@@ -85,8 +84,6 @@ export const productsService = {
     }
 };
 
-// ... שאר הקובץ (authService, cartService, etc.) נשאר זהה ...
-// אני מדביק כאן רק את ההמשך כדי שהקובץ יהיה מלא ותקין להעתקה
 
 export const authService = {
     register: async (email: string, password: string, firstName: string, lastName: string) => {

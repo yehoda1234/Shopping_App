@@ -20,7 +20,6 @@ export default function Profile() {
     <Container className="py-5">
       <Row className="justify-content-center">
         
-        {/* עמודה שמאלית: כרטיס ביקור ותמונה */}
         <Col md={4} className="mb-4">
           <Card className="shadow-sm border-0 text-center p-4 h-100">
             <Card.Body>
@@ -72,7 +71,6 @@ export default function Profile() {
           </Card>
         </Col>
 
-        {/* עמודה ימנית: פרטים נוספים */}
         <Col md={8}>
             <Card className="shadow-sm border-0 h-100">
                 <Card.Header className="bg-white border-0 py-3">
@@ -105,7 +103,6 @@ export default function Profile() {
                             </div>
                         </ListGroup.Item>
 
-                        {/* אפשר להוסיף כאן עוד שדות בעתיד כמו טלפון, כתובת וכו' */}
                     </ListGroup>
                 </Card.Body>
             </Card>

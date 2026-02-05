@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Container, Row, Col, Spinner, Alert, Form, InputGroup } from 'react-bootstrap';
-import type { Product, Category } from '../types/product'; // וודא שזה מייבא גם את Category
-import { productsService, categoriesService } from '../services/api'; // הוספנו את categoriesService
+import type { Product, Category } from '../types/product'; 
+import { productsService, categoriesService } from '../services/api'; 
 import ProductCard from '../components/ProductCard';
-import { Search } from 'react-bootstrap-icons'; // הוספנו אייקון חיפוש
+import { Search } from 'react-bootstrap-icons'; 
 
 export default function Store() {
   // נתונים גולמיים מהשרת
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]); // סטייט לקטגוריות
+  const [categories, setCategories] = useState<Category[]>([]); 
   
   // נתונים לסינון ותצוגה
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -24,17 +24,15 @@ export default function Store() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // טעינה במקביל כדי לחסוך זמן
         const [productsData, categoriesData] = await Promise.all([
             productsService.getAll(),
             categoriesService.getAll()
         ]);
 
-        // const sortedProducts = productsData.sort((a: any, b: any) => a.id - b.id);
 
         setProducts(productsData);
         setCategories(categoriesData);
-        setFilteredProducts(productsData); // בהתחלה מציגים את הכל
+        setFilteredProducts(productsData); 
 
       } catch (err) {
         setError('לא הצלחנו לטעון את החנות. נסה שוב מאוחר יותר.');
@@ -51,13 +49,10 @@ export default function Store() {
   useEffect(() => {
     let result = products;
 
-    // סינון לפי קטגוריה
     if (selectedCategoryId !== '') {
-        // המרה למספר כי ה-value ב-Select הוא סטרינג
         result = result.filter(p => p.category?.id === Number(selectedCategoryId));
     }
 
-    // סינון לפי טקסט (חיפוש)
     if (searchTerm) {
         const term = searchTerm.toLowerCase();
         result = result.filter(p => 
@@ -108,7 +103,6 @@ export default function Store() {
                 </Form.Select>
             </Col>
 
-            {/* חיפוש חופשי */}
             <Col md={8}>
                 <InputGroup>
                     <InputGroup.Text className="bg-white border-end-0"><Search className="text-muted"/></InputGroup.Text>

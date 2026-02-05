@@ -12,7 +12,9 @@ export default function Checkout() {
 
   // שדות הטופס
   const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');    
   const [phone, setPhone] = useState('');
+  const [cardNumber, setCardNumber] = useState(''); 
   const [comment, setComment] = useState('');
   
   const [loading, setLoading] = useState(false);
@@ -26,11 +28,19 @@ export default function Checkout() {
     setLoading(true);
     setError('');
 
+    // בדיקה פשוטה וקלילה רק למספר כרטיס
+    if (cardNumber.length < 16) {
+        setError('נא להזין מספר אשראי תקין (16 ספרות)');
+        setLoading(false);
+        return;
+    }
+
     try {
       // 1. שליחת ההזמנה לשרת
-      await ordersService.createOrder(address, phone, comment);
+      const fullAddress = `${address}, ${city}`;   
+      await ordersService.createOrder(fullAddress, phone, comment);
       
-      // 2. ניקוי העגלה המקומית (כי השרת כבר ניקה אצלו את העגלה אחרי ההזמנה)
+      // 2. ניקוי העגלה המקומית
       dispatch(clearLocalCart());
 
       // 3. הודעת הצלחה ומעבר לדף הבית
@@ -45,7 +55,12 @@ export default function Checkout() {
     }
   };
 
-  // אם מנסים להיכנס לדף כשהעגלה ריקה - נחזיר אותם לחנות
+  // פונקציה שדואגת שיכניסו רק מספרים
+  const handleCardNumberChange = (e: any) => {
+      const val = e.target.value.replace(/\D/g, '').slice(0, 16); 
+      setCardNumber(val);
+  };
+
   if (items.length === 0) {
       return (
           <Container className="text-center mt-5">
@@ -63,54 +78,82 @@ export default function Checkout() {
       {error && <Alert variant="danger">{error}</Alert>}
 
       <Row>
-        {/* צד ימין: טופס פרטים */}
+        {/* צד ימין: טופס פרטים ואשראי */}
         <Col md={8}>
-          <Card className="shadow-sm p-4 mb-4">
-            <h4 className="mb-3">פרטי משלוח</h4>
-            <Form onSubmit={handlePlaceOrder}>
-              
-              <Form.Group className="mb-3">
-                <Form.Label>כתובת למשלוח *</Form.Label>
-                <Form.Control 
-                    type="text" 
-                    placeholder="רחוב, מספר, עיר" 
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    required
-                />
-              </Form.Group>
+          <Form onSubmit={handlePlaceOrder}>
+            
+            <Card className="shadow-sm p-4 mb-4">
+                <h4 className="mb-3 text-primary">פרטי הזמנה</h4>
+                
+                <Row>
+                    <Col md={6}>
+                        <Form.Group className="mb-3">
+                            <Form.Label>עיר *</Form.Label>
+                            <Form.Control 
+                                type="text" 
+                                value={city}
+                                onChange={(e) => setCity(e.target.value)}
+                                required
+                            />
+                        </Form.Group>
+                    </Col>
+                    <Col md={6}>
+                        <Form.Group className="mb-3">
+                            <Form.Label> רחוב ומספר דירה *</Form.Label>
+                            <Form.Control 
+                                type="text" 
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
+                                required
+                            />
+                        </Form.Group>
+                    </Col>
+                </Row>
 
-              <Form.Group className="mb-3">
-                <Form.Label>טלפון ליצירת קשר *</Form.Label>
-                <Form.Control 
-                    type="tel" 
-                    placeholder="050-0000000" 
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    required
-                />
-              </Form.Group>
+                <Form.Group className="mb-3">
+                    <Form.Label>טלפון ליצירת קשר *</Form.Label>
+                    <Form.Control 
+                        type="tel" 
+                        placeholder="050-0000000" 
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        required
+                    />
+                </Form.Group>
 
-              <Form.Group className="mb-3">
-                <Form.Label>הערות לשליח (אופציונלי)</Form.Label>
-                <Form.Control 
-                    as="textarea" 
-                    rows={3} 
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                />
-              </Form.Group>
+                <Form.Group className="mb-3">
+                    <Form.Label>מספר אשראי *</Form.Label>
+                    <Form.Control 
+                        type="text" 
+                        placeholder="0000 0000 0000 0000" 
+                        value={cardNumber}
+                        onChange={handleCardNumberChange}
+                        maxLength={16}
+                        required
+                    />
+                </Form.Group>
 
-              <Button variant="success" size="lg" type="submit" className="w-100 mt-3" disabled={loading}>
-                {loading ? <Spinner animation="border" size="sm" /> : `שלם עכשיו ₪${total.toFixed(2)}`}
-              </Button>
-            </Form>
-          </Card>
+                <Form.Group className="mb-3">
+                    <Form.Label>הערות לשליח (אופציונלי)</Form.Label>
+                    <Form.Control 
+                        as="textarea" 
+                        rows={2} 
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                    />
+                </Form.Group>
+
+                <Button variant="success" size="lg" type="submit" className="w-100 mt-2" disabled={loading}>
+                    {loading ? <Spinner animation="border" size="sm" /> : `שלם עכשיו ₪${total.toFixed(2)}`}
+                </Button>
+            </Card>
+
+          </Form>
         </Col>
 
         {/* צד שמאל: סיכום הזמנה */}
         <Col md={4}>
-          <Card className="shadow-sm">
+            <Card className="shadow-sm sticky-top" style={{ top: '100px', zIndex: 1 }}>
             <Card.Header className="bg-light fw-bold">סיכום הזמנה</Card.Header>
             <ListGroup variant="flush">
               {items.map((item) => (
@@ -124,7 +167,7 @@ export default function Checkout() {
               ))}
               <ListGroup.Item className="d-flex justify-content-between align-items-center bg-white fw-bold border-top">
                 <span>סה"כ לתשלום:</span>
-                <span className="text-primary">₪{total.toFixed(2)}</span>
+                <span className="text-primary fs-5">₪{total.toFixed(2)}</span>
               </ListGroup.Item>
             </ListGroup>
           </Card>

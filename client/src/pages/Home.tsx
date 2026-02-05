@@ -29,7 +29,6 @@ export default function Home() {
 
   return (
     <div>
-      {/* --- HERO SECTION (הבאנר המודרני) --- */}
       <section className="bg-light py-5 mb-5">
         <Container>
           <Row className="align-items-center flex-column-reverse flex-md-row">
@@ -59,7 +58,7 @@ export default function Home() {
         </Container>
       </section>
 
-      {/* --- FEATURED PRODUCTS (הצצה למוצרים) --- */}
+      {/* ---   (הצצה למוצרים) --- */}
       <Container className="pb-5">
         <div className="d-flex justify-content-between align-items-end mb-4">
             <div>
